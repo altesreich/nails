@@ -189,7 +189,7 @@ export default function AdminDashboardPage() {
     setSavingEdit(true);
     const fechaISO = `${editDate}T${editTime}:00`;
 
-    const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+    const baseUrl = API_URL;
     const endpoints = [
       `${baseUrl}/api/appointments/${apptDocumentId}`,
       `${baseUrl}/api/appointments/${apptId}`,

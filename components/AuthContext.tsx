@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
-import { loginUser, registerUser, getCurrentUser, type User, type AuthResponse } from "@/lib/api"
+import { loginUser, registerUser, getCurrentUser, type AuthResponse, type User } from "@/lib/api"
 
 interface AuthContextType {
   user: User | null
@@ -27,9 +27,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    const savedToken = localStorage.getItem("token")
+    const savedToken = typeof window !== "undefined" ? localStorage.getItem("token") : null
     if (savedToken) {
-      loadUser(savedToken)
+      void loadUser(savedToken)
     } else {
       setLoading(false)
     }
@@ -63,7 +63,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     name?: string
     phone?: string
   }): Promise<AuthResponse> {
-    // Ensure we always pass defined strings for name/phone to satisfy the API helper signature
     const payload = {
       username: userData.username,
       email: userData.email,

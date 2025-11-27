@@ -4,7 +4,8 @@ import { useState } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Menu, X } from "lucide-react"
-import type { User } from "@/components/AuthContext"
+import type { User } from "@/lib/api"
+
 
 interface MobileNavProps {
   currentPage?: string
