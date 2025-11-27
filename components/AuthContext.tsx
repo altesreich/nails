@@ -63,7 +63,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     name?: string
     phone?: string
   }): Promise<AuthResponse> {
-    const data = await registerUser(userData)
+    // Ensure we always pass defined strings for name/phone to satisfy the API helper signature
+    const payload = {
+      username: userData.username,
+      email: userData.email,
+      password: userData.password,
+      name: userData.name ?? "",
+      phone: userData.phone ?? "",
+    }
+    const data = await registerUser(payload)
     localStorage.setItem("token", data.jwt)
     setToken(data.jwt)
     setUser(data.user)

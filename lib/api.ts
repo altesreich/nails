@@ -1,4 +1,4 @@
-const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
+export const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'http://localhost:1337';
 
 // Tipos
 export interface User {
@@ -30,8 +30,8 @@ export async function registerUser(userData: {
   username: string;
   email: string;
   password: string;
-  name: string;
-  phone: string;
+  name?: string;
+  phone?: string;
 }): Promise<AuthResponse> {
   // 1. Registro solo con username, email y password
   const baseUser = {

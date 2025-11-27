@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthContext";
+import { API_URL } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { Loader } from "@/components/loader";
 import Link from "next/link";
@@ -72,12 +73,9 @@ export default function DashboardPage() {
       }
 
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}/api/users/me?populate=role`,
-          {
-            headers: { Authorization: `Bearer ${token}` }
-          }
-        );
+        const res = await fetch(`${API_URL}/api/users/me?populate=role`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
 
         if (res.ok) {
           const userData = await res.json();
@@ -104,7 +102,7 @@ export default function DashboardPage() {
     setLoading(true);
     setError("");
     try {
-      const url = `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}/api/appointments?populate[services][populate]=*&populate=users_permissions_user`;
+      const url = `${API_URL}/api/appointments?populate[services][populate]=*&populate=users_permissions_user`;
       const res = await fetch(url, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -138,9 +136,7 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (!editing) return;
-    fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}/api/services`
-    )
+    fetch(`${API_URL}/api/services`)
       .then((res) => res.json())
       .then((data) => {
         if (!data || !data.data) return setServices([]);
@@ -169,8 +165,7 @@ export default function DashboardPage() {
   const handleEditSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!editing) return;
-    await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}/api/appointments/${editing.id}`,
+    await fetch(`${API_URL}/api/appointments/${editing.id}`,
       {
         method: "PUT",
         headers: {
@@ -192,8 +187,7 @@ export default function DashboardPage() {
 
   const handleCancelRequest = async (id: number) => {
     if (!confirm("¿Solicitar cancelación de esta cita?")) return;
-    await fetch(
-      `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}/api/appointments/${id}`,
+    await fetch(`${API_URL}/api/appointments/${id}`,
       {
         method: "PUT",
         headers: {

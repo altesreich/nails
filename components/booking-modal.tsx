@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { useAuth } from "@/components/AuthContext"
+import { API_URL } from "@/lib/api"
 
 
 interface BookingModalProps {
@@ -47,7 +48,7 @@ export function BookingModal({ isOpen, onClose, onAppointmentCreated }: BookingM
     if (!isOpen) return
     setServicesLoading(true)
     setError("")
-    fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}/api/services?populate=*`)
+    fetch(`${API_URL}/api/services?populate=*`)
       .then(res => res.json())
       .then(data => {
         if (!data || !data.data || !Array.isArray(data.data)) return setServices([])
@@ -136,7 +137,7 @@ export function BookingModal({ isOpen, onClose, onAppointmentCreated }: BookingM
           users_permissions_user: user.id
         }
       }
-      const res = await fetch(`${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}/api/appointments`, {
+      const res = await fetch(`${API_URL}/api/appointments`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

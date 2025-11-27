@@ -1,6 +1,7 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
+import { API_URL } from "@/lib/api"
 import Link from "next/link"
 import { MobileNav } from "@/components/mobile-nav"
 import { useState, useEffect } from "react"
@@ -31,12 +32,9 @@ export function HeaderLayout({
       }
 
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}/api/users/me?populate=role`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          }
-        )
+        const res = await fetch(`${API_URL}/api/users/me?populate=role`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
 
         if (res.ok) {
           const userData = await res.json()

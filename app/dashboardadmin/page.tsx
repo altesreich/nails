@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthContext";
+import { API_URL } from "@/lib/api";
 import { Loader } from "@/components/loader";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -74,10 +75,7 @@ export default function AdminDashboardPage() {
         return;
       }
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337"}/api/users/me?populate=role`,
-          { headers: { Authorization: `Bearer ${token}` } }
-        );
+        const res = await fetch(`${API_URL}/api/users/me?populate=role`, { headers: { Authorization: `Bearer ${token}` } });
         if (res.ok) {
           const userData = await res.json();
           const roleName = userData.role?.name || userData.role?.type;
@@ -99,7 +97,7 @@ export default function AdminDashboardPage() {
     setLoading(true);
     setError("");
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+      const baseUrl = API_URL;
       let url = `${baseUrl}/api/appointments?populate[services][populate]=*&populate=users_permissions_user`;
       let res = await fetch(url, { headers: { Authorization: `Bearer ${token}` } });
       if (!res.ok) {
@@ -144,7 +142,7 @@ export default function AdminDashboardPage() {
       alert(`ID inválido: ${apptId}. Refresca el panel.`);
       return;
     }
-    const baseUrl = process.env.NEXT_PUBLIC_STRAPI_URL || "http://localhost:1337";
+    const baseUrl = API_URL;
     const endpoints = [
       `${baseUrl}/api/appointments/${apptDocumentId}`,
       `${baseUrl}/api/appointments/${apptId}`,
