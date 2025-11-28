@@ -1,4 +1,10 @@
-export const API_URL = process.env.NEXT_PUBLIC_STRAPI_URL || 'https://nails-backend-fwjb.onrender.com';
+// Normaliza la URL base quitando barra final si existe
+const rawApiUrl =
+  process.env.NEXT_PUBLIC_STRAPI_URL || 'https://nails-backend-fwjb.onrender.com';
+
+export const API_URL = rawApiUrl.replace(/\/+$/, '');
+
+console.log('API_URL en runtime (frontend):', API_URL);
 
 // Tipos
 export interface User {
@@ -33,12 +39,13 @@ export async function registerUser(userData: {
   name?: string;
   phone?: string;
 }): Promise<AuthResponse> {
-  // 1. Registro solo con username, email y password
   const baseUser = {
     username: userData.username,
     email: userData.email,
     password: userData.password,
   };
+
+  console.log('POST register ->', `${API_URL}/api/auth/local/register`);
 
   const response = await fetch(`${API_URL}/api/auth/local/register`, {
     method: 'POST',
@@ -49,15 +56,25 @@ export async function registerUser(userData: {
   });
 
   if (!response.ok) {
-    const error: ApiError = await response.json();
-    throw new Error(error.error.message || 'Error al registrar usuario');
+    let errorBody: ApiError | null = null;
+    try {
+      errorBody = await response.json();
+    } catch {
+      /* ignore */
+    }
+    throw new Error(
+      errorBody?.error?.message || `Error al registrar usuario (status ${response.status})`,
+    );
   }
 
   const data: AuthResponse = await response.json();
 
   // 2. Update con los datos adicionales solo si existen y tienes JWT
   if ((userData.name || userData.phone) && data.jwt) {
-    const updateRes = await fetch(`${API_URL}/api/users/${data.user.id}`, {
+    const updateUrl = `${API_URL}/api/users/${data.user.id}`;
+    console.log('PUT update user ->', updateUrl);
+
+    const updateRes = await fetch(updateUrl, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
@@ -66,7 +83,7 @@ export async function registerUser(userData: {
       body: JSON.stringify({
         ...(userData.name && { name: userData.name }),
         ...(userData.phone && { phone: userData.phone }),
-        account_status: 'pending', // Si quieres forzar el status tras crear
+        account_status: 'pending',
       }),
     });
 
@@ -74,7 +91,6 @@ export async function registerUser(userData: {
       const updatedUser = await updateRes.json();
       data.user = { ...data.user, ...updatedUser };
     }
-    // Si falla el update, el registro sigue siendo válido
   }
 
   return data;
@@ -82,7 +98,10 @@ export async function registerUser(userData: {
 
 // Login
 export async function loginUser(identifier: string, password: string): Promise<AuthResponse> {
-  const response = await fetch(`${API_URL}/api/auth/local`, {
+  const url = `${API_URL}/api/auth/local`;
+  console.log('POST login ->', url);
+
+  const response = await fetch(url, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -94,8 +113,15 @@ export async function loginUser(identifier: string, password: string): Promise<A
   });
 
   if (!response.ok) {
-    const error: ApiError = await response.json();
-    throw new Error(error.error.message || 'Error al iniciar sesión');
+    let errorBody: ApiError | null = null;
+    try {
+      errorBody = await response.json();
+    } catch {
+      /* ignore */
+    }
+    throw new Error(
+      errorBody?.error?.message || `Error al iniciar sesión (status ${response.status})`,
+    );
   }
 
   return response.json();
@@ -103,14 +129,17 @@ export async function loginUser(identifier: string, password: string): Promise<A
 
 // Obtener datos del usuario actual
 export async function getCurrentUser(token: string): Promise<User> {
-  const response = await fetch(`${API_URL}/api/users/me`, {
+  const url = `${API_URL}/api/users/me`;
+  console.log('GET current user ->', url);
+
+  const response = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
   });
 
   if (!response.ok) {
-    throw new Error('Error al obtener datos del usuario');
+    throw new Error(`Error al obtener datos del usuario (status ${response.status})`);
   }
 
   return response.json();
