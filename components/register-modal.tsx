@@ -54,6 +54,7 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
       setSuccess(
         "¡Registro exitoso! Tu cuenta está pendiente de aprobación por un administrador. Recibirás un correo o notificación cuando esté validada."
       );
+      setError("");
       setFormData({
         name: "",
         email: "",
@@ -61,8 +62,13 @@ export function RegisterModal({ isOpen, onClose, onSwitchToLogin }: RegisterModa
         password: "",
         confirmPassword: "",
       });
+      setTimeout(() => {
+        onClose();
+        setSuccess("");
+      }, 2500);
     } catch (err:any) {
-      setError(err instanceof Error ? err.message : "Error al registrar usuario")
+      setError(err instanceof Error ? err.message : "Error al registrar usuario");
+      setSuccess("");
     } finally {
       setLoading(false)
     }
