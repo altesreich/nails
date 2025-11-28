@@ -27,16 +27,53 @@ export function HeaderLayout({
   useEffect(() => {
     if (user && token) {
       const checkRole = async () => {
-        // Primero verificar en el objeto usuario
-        if (user.role) {
-          const roleName = user.role.name || user.role.type;
-          const isAdminRole = roleName?.toLowerCase() === 'admin' || roleName?.toLowerCase() === 'adminails';
-          console.log('👤 Usuario:', user.email, 'Rol:', roleName, 'Es Admin:', isAdminRole);
-          setIsAdmin(isAdminRole);
+        // Recolectar posibles nombres de rol desde varias estructuras
+        const roleCandidates: string[] = [];
+        try {
+          if (user.role) {
+            if (typeof user.role === 'string') roleCandidates.push(user.role);
+            else {
+              if (user.role.name) roleCandidates.push(user.role.name);
+              if (user.role.type) roleCandidates.push(user.role.type);
+            }
+          }
+          // Algunos backends devuelven { data: { role: ... } } o { data: {...} }
+          // Normalizar también esas formas
+          // @ts-ignore
+          if (user.data && user.data.role) {
+            // @ts-ignore
+            if (typeof user.data.role === 'string') roleCandidates.push(user.data.role);
+            else {
+              // @ts-ignore
+              if (user.data.role.name) roleCandidates.push(user.data.role.name);
+              // @ts-ignore
+              if (user.data.role.type) roleCandidates.push(user.data.role.type);
+            }
+          }
+          // Si vienen roles como array
+          // @ts-ignore
+          if (Array.isArray(user.roles)) {
+            // @ts-ignore
+            user.roles.forEach((r: any) => { if (r?.name) roleCandidates.push(r.name); if (r?.type) roleCandidates.push(r.type); if (typeof r === 'string') roleCandidates.push(r); });
+          }
+
+          // También usar cualquier campo plano que pueda contener rol
+          // @ts-ignore
+          if (user.roleName) roleCandidates.push(user.roleName);
+        } catch (e) {
+          // ignore
+        }
+
+        // Normalizar a minúsculas y buscar 'admin' o 'adminails' como subcadena
+        const normalized = roleCandidates.map((r) => String(r || '').toLowerCase());
+        const found = normalized.find((r) => r.includes('admin'));
+        if (found) {
+          console.log('👤 Usuario roles detectados:', roleCandidates, '-> marcado como admin por:', found);
+          setIsAdmin(true);
           return;
         }
 
-        // Si no, traer de la API
+        // Si no se detectó rol en memoria, traer de la API
         try {
           const res = await fetch(`${API_URL}/api/users/me?populate=role`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -45,10 +82,26 @@ export function HeaderLayout({
           if (res.ok) {
             const userData = await res.json();
             console.log('📡 Datos del usuario desde API:', userData);
-            const roleName = userData.role?.name || userData.role?.type;
-            const isAdminRole = roleName?.toLowerCase() === 'admin' || roleName?.toLowerCase() === 'adminails';
-            console.log('👤 Usuario (from API):', userData.email, 'Rol:', roleName, 'Es Admin:', isAdminRole);
-            setIsAdmin(isAdminRole);
+            // Intentar las mismas estrategias de extracción en la respuesta API
+            const apiRoles: string[] = [];
+            if (userData.role) {
+              if (typeof userData.role === 'string') apiRoles.push(userData.role);
+              else { if (userData.role.name) apiRoles.push(userData.role.name); if (userData.role.type) apiRoles.push(userData.role.type); }
+            }
+            if (userData.data && userData.data.role) {
+              if (typeof userData.data.role === 'string') apiRoles.push(userData.data.role);
+              else { if (userData.data.role.name) apiRoles.push(userData.data.role.name); if (userData.data.role.type) apiRoles.push(userData.data.role.type); }
+            }
+            if (Array.isArray(userData.roles)) { userData.roles.forEach((r:any) => { if (r?.name) apiRoles.push(r.name); if (r?.type) apiRoles.push(r.type); if (typeof r === 'string') apiRoles.push(r); }); }
+
+            const normApi = apiRoles.map((r) => String(r || '').toLowerCase());
+            const foundApi = normApi.find((r) => r.includes('admin'));
+            console.log('👤 Roles desde API detectados:', apiRoles, '->', foundApi);
+            if (foundApi) {
+              setIsAdmin(true);
+            } else {
+              setIsAdmin(false);
+            }
           }
         } catch (error) {
           console.error('❌ Error verificando rol:', error);
