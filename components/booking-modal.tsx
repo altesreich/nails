@@ -48,7 +48,10 @@ export function BookingModal({ isOpen, onClose, onAppointmentCreated }: BookingM
 
     const url = `${API_URL}/api/services?populate=*`;
 
-    fetch(url, { mode: "cors" })
+    const fetchHeaders: Record<string, string> = {};
+    if (token) fetchHeaders.Authorization = `Bearer ${token}`;
+
+    fetch(url, { mode: "cors", headers: fetchHeaders })
       .then((res) => {
         if (!res.ok) {
           throw new Error(`Error cargando servicios (${res.status})`);
