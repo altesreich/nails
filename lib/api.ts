@@ -14,6 +14,12 @@ export interface User {
   phone?: string;
   confirmed: boolean;
   blocked: boolean;
+  role?: {
+    id: number;
+    name: string;
+    type: string;
+    description?: string;
+  };
 }
 
 export interface AuthResponse {
@@ -125,7 +131,7 @@ export async function loginUser(identifier: string, password: string): Promise<A
 
 // Obtener datos del usuario actual
 export async function getCurrentUser(token: string): Promise<User> {
-  const url = `${API_URL}/api/users/me`;
+  const url = `${API_URL}/api/users/me?populate=role`;
   console.log('GET current user ->', url);
 
   const response = await fetch(url, {

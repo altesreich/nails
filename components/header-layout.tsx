@@ -31,6 +31,16 @@ export function HeaderLayout({
         return
       }
 
+      // Primero intentar obtener rol del usuario cargado
+      if (user.role) {
+        const roleName = user.role.name || user.role.type
+        if (roleName === "admin" || roleName === "adminails") {
+          setIsAdmin(true)
+          return
+        }
+      }
+
+      // Si no está en el usuario, intentar obtener via endpoint con populate
       try {
         const res = await fetch(`${API_URL}/api/users/me?populate=role`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -40,15 +50,15 @@ export function HeaderLayout({
           const userData = await res.json()
           const roleName = userData.role?.name || userData.role?.type
 
-          // Verificar si el rol es admin o adminails
           if (roleName === "admin" || roleName === "adminails") {
             setIsAdmin(true)
           } else {
             setIsAdmin(false)
           }
+        } else {
+          setIsAdmin(false)
         }
       } catch (e) {
-        console.error("Error verificando rol:", e)
         setIsAdmin(false)
       }
     }
