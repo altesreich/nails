@@ -52,8 +52,19 @@ export function BookingModal({ isOpen, onClose, onAppointmentCreated }: BookingM
     if (token) fetchHeaders.Authorization = `Bearer ${token}`;
 
     fetch(url, { mode: "cors", headers: fetchHeaders })
-      .then((res) => {
+      .then(async (res) => {
         if (!res.ok) {
+          // leer cuerpo (puede contener detalle del motivo del 403)
+          let bodyText = "";
+          try {
+            bodyText = await res.text();
+          } catch (e) {
+            bodyText = "(no se pudo leer el cuerpo de la respuesta)";
+          }
+          console.error(`GET /api/services failed ${res.status}:`, bodyText);
+          setError(`Error cargando servicios (${res.status}). Revisa consola para más detalles.`);
+          setServices([]);
+          // lanzar para que el catch de la cadena maneje el flujo
           throw new Error(`Error cargando servicios (${res.status})`);
         }
         return res.json();
