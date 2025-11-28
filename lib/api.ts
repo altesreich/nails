@@ -1,8 +1,5 @@
-// Normaliza la URL base quitando barra final si existe
-const rawApiUrl =
-  process.env.NEXT_PUBLIC_STRAPI_URL || 'https://nails-backend-fwjb.onrender.com';
-
-export const API_URL = rawApiUrl.replace(/\/+$/, '');
+// Fuerza URL del backend sin usar env para probar
+export const API_URL = 'https://nails-backend-fwjb.onrender.com';
 
 console.log('API_URL en runtime (frontend):', API_URL);
 
@@ -69,7 +66,6 @@ export async function registerUser(userData: {
 
   const data: AuthResponse = await response.json();
 
-  // 2. Update con los datos adicionales solo si existen y tienes JWT
   if ((userData.name || userData.phone) && data.jwt) {
     const updateUrl = `${API_URL}/api/users/${data.user.id}`;
     console.log('PUT update user ->', updateUrl);
