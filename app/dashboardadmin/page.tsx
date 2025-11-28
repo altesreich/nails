@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuth } from "@/components/AuthContext";
 import { API_URL } from "@/lib/api";
 import { Loader } from "@/components/loader";
+import { BookingModal } from "@/components/booking-modal";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -65,6 +66,7 @@ export default function AdminDashboardPage() {
   const [isAdmin, setIsAdmin] = useState(false);
   const [checkingRole, setCheckingRole] = useState(true);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   
   // ✅ NUEVO: Estado para edición de fecha/hora
   const [editingAppointment, setEditingAppointment] = useState<number | null>(null);
@@ -234,6 +236,75 @@ export default function AdminDashboardPage() {
     setEditTime("");
   };
 
+  // Exportar citas a CSV (reutilizable desde el header y desde el panel)
+  const exportAppointments = async (month?: string) => {
+    setExporting(true);
+    try {
+      const targetMonth = month || exportMonth;
+      const [yearStr, monthStr] = targetMonth.split('-');
+      const year = Number(yearStr);
+      const monthNum = Number(monthStr);
+      const prefix = `${year}-${String(monthNum).padStart(2, '0')}`;
+
+      const toExport = appointments.filter(a => {
+        try {
+          const d = new Date(a.date);
+          const y = d.getFullYear();
+          const m = String(d.getMonth() + 1).padStart(2, '0');
+          return `${y}-${m}` === prefix;
+        } catch { return false; }
+      });
+
+      const rows: string[] = [];
+      const headers = ['ID','DocumentId','Fecha','Hora','Estado','Usuario','Email','Servicios','Total','Notas'];
+      const csvSafe = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      rows.push(headers.join(','));
+
+      const calcularTotalLocal = (servs: any[]) => (servs || []).reduce((s, it) => s + (Number(it.price) || 0), 0);
+
+      toExport.forEach((appt) => {
+        const date = new Date(appt.date);
+        const fecha = date.toISOString().split('T')[0];
+        const hora = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        const usuario = appt.users_permissions_user?.username || appt.users_permissions_user?.name || '';
+        const email = appt.users_permissions_user?.email || '';
+        const servicios = (appt.services || []).map((s:any) => `${s.name} (${s.price}€)`).join('; ');
+        const total = calcularTotalLocal(appt.services || []);
+        const line = [
+          appt.id,
+          appt.documentId || '',
+          fecha,
+          hora,
+          appt.appointment_status || '',
+          usuario,
+          email,
+          servicios,
+          total,
+          appt.notes || ''
+        ].map(csvSafe).join(',');
+        rows.push(line);
+      });
+
+      const csvContent = rows.join('\n');
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      const fileName = `citas_${targetMonth}.csv`;
+      if ((navigator as any).msSaveBlob) {
+        (navigator as any).msSaveBlob(blob, fileName);
+      } else {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }
+    } finally {
+      setExporting(false);
+    }
+  };
+
   if (checkingRole) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-pink-50 to-indigo-50">
@@ -312,6 +383,19 @@ export default function AdminDashboardPage() {
             Ben Lux Nails
           </Link>
           <div className="flex items-center gap-6">
+            <Button
+              onClick={() => setIsBookingOpen(true)}
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
+            >
+              Agendar
+            </Button>
+            <Button
+              onClick={() => exportAppointments(exportMonth)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+              disabled={exporting}
+            >
+              {exporting ? 'Exportando...' : 'Exportar (Excel)'}
+            </Button>
             <span className="text-base text-muted-foreground font-semibold">
               Admin {user?.username || user?.name || user?.email}
             </span>
@@ -351,71 +435,7 @@ export default function AdminDashboardPage() {
                     />
                   </div>
                   <Button
-                    onClick={async () => {
-                      setExporting(true);
-                      try {
-                        const [yearStr, monthStr] = exportMonth.split('-');
-                        const year = Number(yearStr);
-                        const month = Number(monthStr);
-                        const prefix = `${year}-${String(month).padStart(2, '0')}`;
-
-                        const toExport = appointments.filter(a => {
-                          try {
-                            const d = new Date(a.date);
-                            const y = d.getFullYear();
-                            const m = String(d.getMonth() + 1).padStart(2, '0');
-                            return `${y}-${m}` === prefix;
-                          } catch { return false; }
-                        });
-
-                        const rows: string[] = [];
-                        const headers = ['ID','DocumentId','Fecha','Hora','Estado','Usuario','Email','Servicios','Total','Notas'];
-                        const csvSafe = (v: any) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-                        rows.push(headers.join(','));
-                        const calcularTotal = (servs: any[]) => (servs || []).reduce((s, it) => s + (Number(it.price) || 0), 0);
-
-                        toExport.forEach((appt) => {
-                          const date = new Date(appt.date);
-                          const fecha = date.toISOString().split('T')[0];
-                          const hora = date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-                          const usuario = appt.users_permissions_user?.username || appt.users_permissions_user?.name || '';
-                          const email = appt.users_permissions_user?.email || '';
-                          const servicios = (appt.services || []).map((s:any) => `${s.name} (${s.price}€)`).join('; ');
-                          const total = calcularTotal(appt.services || []);
-                          const line = [
-                            appt.id,
-                            appt.documentId || '',
-                            fecha,
-                            hora,
-                            appt.appointment_status || '',
-                            usuario,
-                            email,
-                            servicios,
-                            total,
-                            appt.notes || ''
-                          ].map(csvSafe).join(',');
-                          rows.push(line);
-                        });
-
-                        const csvContent = rows.join('\n');
-                        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-                        const link = document.createElement('a');
-                        const fileName = `citas_${exportMonth}.csv`;
-                        if ((navigator as any).msSaveBlob) {
-                          (navigator as any).msSaveBlob(blob, fileName);
-                        } else {
-                          const url = URL.createObjectURL(blob);
-                          link.setAttribute('href', url);
-                          link.setAttribute('download', fileName);
-                          document.body.appendChild(link);
-                          link.click();
-                          document.body.removeChild(link);
-                          URL.revokeObjectURL(url);
-                        }
-                      } finally {
-                        setExporting(false);
-                      }
-                    }}
+                    onClick={() => exportAppointments(exportMonth)}
                     className="bg-green-600 hover:bg-green-700 text-white"
                     disabled={exporting}
                   >
@@ -699,6 +719,12 @@ export default function AdminDashboardPage() {
           </aside>
         </div>
       </div>
+
+      <BookingModal
+        isOpen={isBookingOpen}
+        onClose={() => setIsBookingOpen(false)}
+        onAppointmentCreated={fetchAppointments}
+      />
     </div>
   );
 }
