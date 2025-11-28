@@ -36,7 +36,7 @@ export default function Home() {
           <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-8 lg:gap-12 max-w-5xl mx-auto">
             <div className="flex-shrink-0">
               <div className="w-28 h-28 md:w-40 md:h-40 lg:w-48 lg:h-48 bg-foreground rounded-full flex items-center justify-center">
-                <Award className="w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 text-primary" />
+                <Award className="w-12 h-12 md:w-16 md:h-16 lg:w-24 lg:h-24 text-primary animate-float" />
               </div>
             </div>
             <div className="text-center md:text-left text-primary-foreground">
@@ -62,7 +62,7 @@ export default function Home() {
             Welcome to Ben Lux.
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8 max-w-7xl mx-auto">
-            <Card className="border-none shadow-none bg-transparent">
+            <Card className="border-none shadow-none bg-transparent transition-transform transform hover:-translate-y-2 hover:scale-[1.02] card-entrance">
               <CardContent className="pt-4 md:pt-6 text-center">
                 <Sparkles className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 text-primary" />
                 <h3 className="text-sm md:text-lg lg:text-xl font-light mb-2 md:mb-3 text-primary tracking-wide">
@@ -76,7 +76,7 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="border-none shadow-none bg-transparent">
+            <Card className="border-none shadow-none bg-transparent transition-transform transform hover:-translate-y-2 hover:scale-[1.02] card-entrance">
               <CardContent className="pt-4 md:pt-6 text-center">
                 <Award className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 text-primary" />
                 <h3 className="text-sm md:text-lg lg:text-xl font-light mb-2 md:mb-3 text-primary tracking-wide">
@@ -90,7 +90,7 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="border-none shadow-none bg-transparent">
+            <Card className="border-none shadow-none bg-transparent transition-transform transform hover:-translate-y-2 hover:scale-[1.02] card-entrance">
               <CardContent className="pt-4 md:pt-6 text-center">
                 <Users className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 text-primary" />
                 <h3 className="text-sm md:text-lg lg:text-xl font-light mb-2 md:mb-3 text-primary tracking-wide">
@@ -104,7 +104,7 @@ export default function Home() {
                 </p>
               </CardContent>
             </Card>
-            <Card className="border-none shadow-none bg-transparent">
+            <Card className="border-none shadow-none bg-transparent transition-transform transform hover:-translate-y-2 hover:scale-[1.02] card-entrance">
               <CardContent className="pt-4 md:pt-6 text-center">
                 <Shield className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-3 md:mb-4 text-primary" />
                 <h3 className="text-sm md:text-lg lg:text-xl font-light mb-2 md:mb-3 text-primary tracking-wide">
@@ -129,31 +129,31 @@ export default function Home() {
             OUR SERVICES
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 lg:gap-8 max-w-6xl mx-auto">
-            <div className="relative group overflow-hidden rounded-lg aspect-[3/4]">
+            <div className="relative group overflow-hidden rounded-lg aspect-[3/4] shadow-lg transition-transform transform hover:scale-105">
               <img
                 src="/manicure-natural-nails.jpg"
                 alt="Manicure Services"
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-6">
                 <h3 className="text-white text-lg md:text-2xl font-light">Manicures</h3>
               </div>
             </div>
-            <div className="relative group overflow-hidden rounded-lg aspect-[3/4]">
+            <div className="relative group overflow-hidden rounded-lg aspect-[3/4] shadow-lg transition-transform transform hover:scale-105">
               <img
                 src="/pedicure-spa-feet.jpg"
                 alt="Pedicure Services"
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-6">
                 <h3 className="text-white text-lg md:text-2xl font-light">Pedicures</h3>
               </div>
             </div>
-            <div className="relative group overflow-hidden rounded-lg aspect-[3/4]">
+            <div className="relative group overflow-hidden rounded-lg aspect-[3/4] shadow-lg transition-transform transform hover:scale-105">
               <img
                 src="/nail-art-design.jpg"
                 alt="Nail Art Services"
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4 md:p-6">
                 <h3 className="text-white text-lg md:text-2xl font-light">Nail Art</h3>

@@ -56,7 +56,10 @@ export function HeroSlider({ onBookNow }: HeroSliderProps) {
   }
 
   return (
-    <section className="relative h-screen flex items-center justify-center overflow-hidden">
+    <section className="relative h-screen flex items-center justify-center overflow-hidden bg-animated-gradient">
+      {/* Floating accents */}
+      <div className="pointer-events-none absolute -top-8 -left-8 w-48 h-48 rounded-full blur-3xl bg-gradient-to-r from-pink-400 to-purple-400 opacity-30 animate-float-slow" />
+      <div className="pointer-events-none absolute -bottom-10 -right-10 w-56 h-56 rounded-full blur-3xl bg-gradient-to-r from-rose-300 to-indigo-400 opacity-25 animate-float" />
       {/* Slides */}
       {slides.map((slide, index) => (
         <div
@@ -79,7 +82,7 @@ export function HeroSlider({ onBookNow }: HeroSliderProps) {
       {/* Content */}
       <div className="relative z-10 text-center text-white px-4">
         <div className="mb-8">
-          <div className="font-cursive text-7xl md:text-8xl mb-2 italic">Ben Lux</div>
+          <div className="font-cursive text-7xl md:text-8xl mb-2 italic animate-float">Ben Lux</div>
           <div className="text-sm tracking-[0.3em] uppercase font-light">NAILS</div>
         </div>
 
@@ -89,7 +92,7 @@ export function HeroSlider({ onBookNow }: HeroSliderProps) {
 
         <Button
           size="lg"
-          className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-base"
+          className="bg-primary hover:bg-primary/90 text-primary-foreground px-8 py-6 text-base transform transition-transform hover:-translate-y-1 hover:scale-105 shimmer"
           onClick={onBookNow}
         >
           BOOK NOW

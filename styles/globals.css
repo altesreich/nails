@@ -123,3 +123,67 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Animations for hero and UI accents */
+@keyframes floatY {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-8px); }
+  100% { transform: translateY(0px); }
+}
+
+@keyframes floatX {
+  0% { transform: translateX(0px); }
+  50% { transform: translateX(6px); }
+  100% { transform: translateX(0px); }
+}
+
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+.animate-float {
+  animation: floatY 6s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: floatY 9s ease-in-out infinite;
+}
+
+.animate-float-x {
+  animation: floatX 7s ease-in-out infinite;
+}
+
+.bg-animated-gradient {
+  background: linear-gradient(270deg, rgba(236,72,153,0.12), rgba(165,94,234,0.12), rgba(99,102,241,0.12));
+  background-size: 600% 600%;
+  animation: gradientShift 12s ease infinite;
+}
+
+.shimmer {
+  background: linear-gradient(90deg, rgba(255,255,255,0.06) 0%, rgba(255,255,255,0.16) 50%, rgba(255,255,255,0.06) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 2.5s linear infinite;
+}
+
+.card-entrance {
+  transform: translateY(8px);
+  opacity: 0;
+  animation: cardIn 0.7s cubic-bezier(.2,.9,.3,1) forwards;
+}
+
+@keyframes cardIn {
+  to { transform: translateY(0); opacity: 1; }
+}
+
+/* Utility for soft glass background */
+.bg-glass {
+  background: linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.35));
+  backdrop-filter: blur(6px) saturate(120%);
+}
