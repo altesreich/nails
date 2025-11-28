@@ -126,7 +126,30 @@ export async function loginUser(identifier: string, password: string): Promise<A
     );
   }
 
-  return response.json();
+  const data: AuthResponse = await response.json();
+  
+  // Obtener datos del usuario con rol incluido
+  try {
+    const userWithRoleUrl = `${API_URL}/api/users/me?populate=role`;
+    console.log('GET user with role ->', userWithRoleUrl);
+    
+    const userWithRoleRes = await fetch(userWithRoleUrl, {
+      headers: {
+        Authorization: `Bearer ${data.jwt}`,
+      },
+    });
+    
+    if (userWithRoleRes.ok) {
+      const userWithRole = await userWithRoleRes.json();
+      console.log('User con rol:', userWithRole);
+      data.user = userWithRole;
+    }
+  } catch (err) {
+    console.error('Error obteniendo usuario con rol:', err);
+    // Continuamos con el usuario sin rol si hay error
+  }
+
+  return data;
 }
 
 // Obtener datos del usuario actual

@@ -23,48 +23,6 @@ export function HeaderLayout({
   const { user, logout, token } = useAuth()
   const [isAdmin, setIsAdmin] = useState(false)
 
-  // Verificar si el usuario es admin o adminails
-  useEffect(() => {
-    const checkAdminRole = async () => {
-      if (!user || !token) {
-        setIsAdmin(false)
-        return
-      }
-
-      // Primero intentar obtener rol del usuario cargado
-      if (user.role) {
-        const roleName = user.role.name || user.role.type
-        if (roleName === "admin" || roleName === "adminails") {
-          setIsAdmin(true)
-          return
-        }
-      }
-
-      // Si no está en el usuario, intentar obtener via endpoint con populate
-      try {
-        const res = await fetch(`${API_URL}/api/users/me?populate=role`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (res.ok) {
-          const userData = await res.json()
-          const roleName = userData.role?.name || userData.role?.type
-
-          if (roleName === "admin" || roleName === "adminails") {
-            setIsAdmin(true)
-          } else {
-            setIsAdmin(false)
-          }
-        } else {
-          setIsAdmin(false)
-        }
-      } catch (e) {
-        setIsAdmin(false)
-      }
-    }
-
-    checkAdminRole()
-  }, [user, token])
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-sm border-b border-border">
@@ -187,3 +145,42 @@ export function HeaderLayout({
     </nav>
   )
 }
+    checkAdminRole()
+  }, [user, token])
+
+  // Verificar rol del usuario cuando cambia
+  useEffect(() => {
+    if (user && token) {
+      const checkRole = async () => {
+        // Primero verificar en el objeto usuario
+        if (user.role) {
+          const roleName = user.role.name || user.role.type;
+          const isAdminRole = roleName?.toLowerCase() === 'admin' || roleName?.toLowerCase() === 'adminails';
+          console.log('👤 Usuario:', user.email, 'Rol:', roleName, 'Es Admin:', isAdminRole);
+          setIsAdmin(isAdminRole);
+          return;
+        }
+
+        // Si no, traer de la API
+        try {
+          const res = await fetch(`${API_URL}/api/users/me?populate=role`, {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+
+          if (res.ok) {
+            const userData = await res.json();
+            console.log('📡 Datos del usuario desde API:', userData);
+            const roleName = userData.role?.name || userData.role?.type;
+            const isAdminRole = roleName?.toLowerCase() === 'admin' || roleName?.toLowerCase() === 'adminails';
+            console.log('👤 Usuario (from API):', userData.email, 'Rol:', roleName, 'Es Admin:', isAdminRole);
+            setIsAdmin(isAdminRole);
+          }
+        } catch (error) {
+          console.error('❌ Error verificando rol:', error);
+          setIsAdmin(false);
+        }
+      };
+
+      checkRole();
+    }
+  }, [user, token])
