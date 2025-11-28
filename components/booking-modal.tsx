@@ -43,18 +43,27 @@ export function BookingModal({ isOpen, onClose, onAppointmentCreated }: BookingM
   useEffect(() => {
     if (!isOpen) return;
 
-    setServicesLoading(true);
-    setError("");
+    let cancelled = false;
+    const timers: number[] = [];
+    let attempt = 0;
+    const maxAttempts = 12; // hasta ~2 minutos
+    const retryDelay = 10000; // 10s
 
     const url = `${API_URL}/api/services?populate=*`;
 
-    const fetchHeaders: Record<string, string> = {};
-    if (token) fetchHeaders.Authorization = `Bearer ${token}`;
+    const fetchWithAttempt = async () => {
+      if (cancelled) return;
+      attempt += 1;
+      setServicesLoading(true);
+      setError("");
 
-    fetch(url, { mode: "cors", headers: fetchHeaders })
-      .then(async (res) => {
+      const fetchHeaders: Record<string, string> = {};
+      if (token) fetchHeaders.Authorization = `Bearer ${token}`;
+
+      try {
+        const res = await fetch(url, { mode: "cors", headers: fetchHeaders });
+
         if (!res.ok) {
-          // leer cuerpo (puede contener detalle del motivo del 403)
           let bodyText = "";
           try {
             bodyText = await res.text();
@@ -62,18 +71,27 @@ export function BookingModal({ isOpen, onClose, onAppointmentCreated }: BookingM
             bodyText = "(no se pudo leer el cuerpo de la respuesta)";
           }
           console.error(`GET /api/services failed ${res.status}:`, bodyText);
-          setError(`Error cargando servicios (${res.status}). Revisa consola para más detalles.`);
-          setServices([]);
-          // lanzar para que el catch de la cadena maneje el flujo
-          throw new Error(`Error cargando servicios (${res.status})`);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        if (!data || !data.data || !Array.isArray(data.data)) {
+
+          if (!cancelled && attempt < maxAttempts) {
+            setError(`Intentando cargar servicios... (intento ${attempt}/${maxAttempts})`);
+            const id = window.setTimeout(fetchWithAttempt, retryDelay);
+            timers.push(id);
+            return;
+          }
+
+          setError(`No se pudieron cargar los servicios (status ${res.status}).`);
           setServices([]);
           return;
         }
+
+        const data = await res.json();
+        if (!data || !data.data || !Array.isArray(data.data)) {
+          setServices([]);
+          setError("Formato inesperado al cargar servicios");
+          return;
+        }
+
+        if (cancelled) return;
         setServices(
           data.data.map((item: any) => ({
             id: item.id,
@@ -82,13 +100,30 @@ export function BookingModal({ isOpen, onClose, onAppointmentCreated }: BookingM
             price: item.attributes?.price || item.price,
           }))
         );
-      })
-      .catch((err) => {
+        setError("");
+      } catch (err) {
+        console.error("Error fetch services:", err);
+        if (!cancelled && attempt < maxAttempts) {
+          setError(`Intentando cargar servicios... (intento ${attempt}/${maxAttempts})`);
+          const id = window.setTimeout(fetchWithAttempt, retryDelay);
+          timers.push(id);
+          return;
+        }
         setError("No pudimos cargar los servicios. Intenta recargar la página.");
         setServices([]);
-      })
-      .finally(() => setServicesLoading(false));
-  }, [isOpen]);
+      } finally {
+        if (!cancelled) setServicesLoading(false);
+      }
+    };
+
+    // iniciar primer intento
+    fetchWithAttempt();
+
+    return () => {
+      cancelled = true;
+      timers.forEach((t) => clearTimeout(t));
+    };
+  }, [isOpen, token]);
 
   useEffect(() => {
     if (isOpen) {
